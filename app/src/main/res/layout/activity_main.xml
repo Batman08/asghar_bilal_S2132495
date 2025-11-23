@@ -1,38 +1,100 @@
-<!--  MPD XML Starter code 2025-2026  -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical">
+    <!-- AppBarLayout groups the Toolbar and TabLayout together -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/salutation"
-            android:layout_width="fill_parent"
+        <!-- Standard Toolbar -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/Theme.AppCompat.Light"
+            app:titleTextColor="@android:color/white"
+            app:title="GBP Currency Exchange" />
+
+        <!-- TabLayout (Initially hidden, only displayed after successful data load) -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Welcome to Mobile Platform Development"
-            android:textSize="20sp" />
+            app:tabIndicatorColor="@android:color/white"
+            app:tabTextColor="@android:color/white"
+            app:tabSelectedTextColor="@android:color/white"
+            app:tabIndicatorHeight="3dp"
+            android:visibility="gone"/>
 
-        <Button
-            android:id="@+id/startButton"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Press to get data" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-        <TextView
-            android:id="@+id/acknowledgement"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Contains Fx Currency Exchange data"
-            android:textSize="20sp" />
+    <!-- Container for both starter elements and the ViewPager -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
-            android:id="@+id/rawDataDisplay"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Raw Data is Displayed here"
-            android:textSize="20sp" />
-    </LinearLayout>
-</ScrollView>
+        <!-- ORIGINAL STARTER CODE SCROLL VIEW (Kept as requested) -->
+        <!-- This will be visible initially and hidden when the ViewPager is shown -->
+        <ScrollView
+            android:id="@+id/starterScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/salutation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome to Mobile Platform Development"
+                    android:textSize="20sp"
+                    android:paddingBottom="8dp"/>
+
+                <Button
+                    android:id="@+id/startButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Press to get data"
+                    android:layout_marginBottom="16dp"/>
+
+                <TextView
+                    android:id="@+id/acknowledgement"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Contains Fx Currency Exchange data"
+                    android:textSize="20sp"
+                    android:paddingBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/rawDataDisplay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Raw Data is Displayed here"
+                    android:textSize="14sp"
+                    android:fontFamily="monospace"
+                    android:padding="8dp"
+                    android:background="#EEEEEE"/>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- ViewPager2 for the modern fragment interface (Initially hidden) -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+    </FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
