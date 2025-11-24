@@ -74,12 +74,9 @@ public class ConversionDialogFragment extends DialogFragment {
             try {
                 double gbpAmount = Double.parseDouble(inputStr);
                 double resultAmount = gbpAmount * item.getRate();
-                DecimalFormat df = new DecimalFormat("#,##0.0000");
+                DecimalFormat df = new DecimalFormat("#,##0.##");
 
-                resultTextView.setText(
-                        df.format(gbpAmount) + " GBP is equal to " +
-                                df.format(resultAmount) + " " + item.getCurrencyCode()
-                );
+                resultTextView.setText(df.format(gbpAmount) + " GBP is equal to " + df.format(resultAmount) + " " + item.getCurrencyCode());
 
             } catch (NumberFormatException e) {
                 resultTextView.setText("Invalid number format.");
