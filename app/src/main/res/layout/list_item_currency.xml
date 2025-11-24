@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp">
+
+    <!--
+        ID: currencyNameTextView
+        Used by CurrencyAdapter to display the full name and 3-letter code.
+    -->
+    <TextView
+        android:id="@+id/currencyNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="United States Dollar (USD)"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!--
+        ID: exchangeRateTextView
+        Used by CurrencyAdapter to display the rate and apply the colour coding (4 Marks).
+    -->
+    <TextView
+        android:id="@+id/exchangeRateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="2dp"
+        android:text="1 GBP = 1.2505 USD"
+        android:textColor="#00AA00"
+        android:textSize="14sp" />
+
+</LinearLayout>
