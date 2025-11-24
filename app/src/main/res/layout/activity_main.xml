@@ -21,80 +21,34 @@
             app:titleTextColor="@android:color/white"
             app:title="GBP Currency Exchange" />
 
-        <!-- TabLayout (Initially hidden, only displayed after successful data load) -->
+        <!-- TabLayout: Visible after successful data load -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:tabIndicatorColor="@android:color/white"
-            app:tabTextColor="@android:color/white"
-            app:tabSelectedTextColor="@android:color/white"
+            app:tabIndicatorColor="@android:color/black"
+            app:tabTextColor="@android:color/black"
+            app:tabSelectedTextColor="@android:color/black"
             app:tabIndicatorHeight="3dp"
             android:visibility="gone"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Container for both starter elements and the ViewPager -->
-    <FrameLayout
+    <!-- ViewPager2 for the modern fragment interface -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:visibility="gone"/>
 
-        <!-- ORIGINAL STARTER CODE SCROLL VIEW (Kept as requested) -->
-        <!-- This will be visible initially and hidden when the ViewPager is shown -->
-        <ScrollView
-            android:id="@+id/starterScrollView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="16dp"
-            android:visibility="visible">
+    <!-- Add a simple loading indicator in the foreground -->
+    <!-- This will be visible by default and hidden upon successful data load -->
+    <ProgressBar
+        android:id="@+id/loadingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="visible"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/salutation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Welcome to Mobile Platform Development"
-                    android:textSize="20sp"
-                    android:paddingBottom="8dp"/>
-
-                <Button
-                    android:id="@+id/startButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Press to get data"
-                    android:layout_marginBottom="16dp"/>
-
-                <TextView
-                    android:id="@+id/acknowledgement"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Contains Fx Currency Exchange data"
-                    android:textSize="20sp"
-                    android:paddingBottom="8dp"/>
-
-                <TextView
-                    android:id="@+id/rawDataDisplay"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Raw Data is Displayed here"
-                    android:textSize="14sp"
-                    android:fontFamily="monospace"
-                    android:padding="8dp"
-                    android:background="#EEEEEE"/>
-            </LinearLayout>
-        </ScrollView>
-
-        <!-- ViewPager2 for the modern fragment interface (Initially hidden) -->
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewPager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"/>
-
-    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
