@@ -47,7 +47,7 @@ public class CurrencyItem implements Serializable {
      * This is crucial for the app's functionality (conversion, filtering, colour coding).
      */
     public void parseDetails() {
-        // Regex to extract the numeric rate from the description:
+        // regex to extract the numeric rate from the description:
         // "1 British Pound Sterling = 1.2505 United States Dollar"
         Pattern ratePattern = Pattern.compile("=\\s*(\\d+\\.\\d+)");
         Matcher rateMatcher = ratePattern.matcher(description);
@@ -59,7 +59,7 @@ public class CurrencyItem implements Serializable {
             }
         }
 
-        // Regex to extract the 3-letter code and name from the title:
+        // regex to extract the 3-letter code and name from the title:
         // "British Pound Sterling(GBP)/United States Dollar(USD)"
         Pattern codeAndNamePattern = Pattern.compile("/\\s*(.*)\\((.{3})\\)");
         Matcher codeAndNameMatcher = codeAndNamePattern.matcher(title);
