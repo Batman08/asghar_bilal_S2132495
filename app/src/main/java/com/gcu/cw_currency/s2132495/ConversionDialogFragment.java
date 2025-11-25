@@ -1,15 +1,16 @@
 package com.gcu.cw_currency.s2132495;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,92 +18,193 @@ import androidx.fragment.app.DialogFragment;
 
 import java.text.DecimalFormat;
 
+/**
+ * A DialogFragment that provides bidirectional currency conversion (GBP <-> Foreign Currency)
+ * for a selected CurrencyItem.
+ */
+
 public class ConversionDialogFragment extends DialogFragment {
 
-    private static final String ARG_ITEM = "currency_item";
-    private CurrencyItem item;
+    private static final String ARG_CURRENCY_ITEM = "currency_item";
+    private CurrencyItem currencyItem;
+    private EditText inputAmount;
+    private TextView resultDisplay;
+    private TextView inputLabel;
+    private TextView exchangeRateDisplay;
+    private RadioGroup conversionDirectionGroup;
+    private final DecimalFormat df = new DecimalFormat("#,##0.00");
+    private boolean isGbpToForeign = true; // conversion state: true = GBP -> Foreign, false = Foreign -> GBP
 
-    public ConversionDialogFragment() {
-        // Required empty public constructor
-    }
-
+    // static factory method
     public static ConversionDialogFragment newInstance(CurrencyItem item) {
         ConversionDialogFragment fragment = new ConversionDialogFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_ITEM, item);
+        args.putSerializable(ARG_CURRENCY_ITEM, item);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public ConversionDialogFragment() {
+
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
         if (getArguments() != null) {
-            item = (CurrencyItem) getArguments().getSerializable(ARG_ITEM);
+            currencyItem = (CurrencyItem) getArguments().getSerializable(ARG_CURRENCY_ITEM);
+        }
+
+        // Use a standard style for wide dialog (adjust theme name if needed)
+        setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar);
+    }
+
+    /**
+     * FIX FOR DIALOG WIDTH: This method runs after the view is created and ensures the dialog
+     * uses 90% of the screen width, preventing it from being too narrow.
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() != null) {
+            // Set the dialog width to 90% of the screen width for a wider, modern look
+            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.95);
+            getDialog().getWindow().setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
         }
     }
 
-    @NonNull
+    @Nullable
     @Override
-    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        LayoutInflater inflater = requireActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.dialog_conversion, null);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // We assume the resource R.layout.dialog_conversion exists in your project.
+        return inflater.inflate(R.layout.dialog_conversion, container, false);
+    }
 
-        // UI References
-        TextView titleTextView = view.findViewById(R.id.dialogTitleTextView);
-        TextView rateDisplayTextView = view.findViewById(R.id.dialogRateDisplayTextView);
-        EditText amountEditText = view.findViewById(R.id.amountEditText);
-        TextView resultTextView = view.findViewById(R.id.resultTextView);
-        Button convertButton = view.findViewById(R.id.convertButton);
-        Button closeButton = view.findViewById(R.id.closeButton);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        // Set initial text
-        titleTextView.setText("Convert GBP to " + item.getCurrencyCode());
-        rateDisplayTextView.setText(
-                String.format("1 GBP = %.4f %s", item.getRate(), item.getCurrencyCode())
-        );
+        if (currencyItem == null) {
+            Toast.makeText(getContext(), "Error: Currency data missing.", Toast.LENGTH_SHORT).show();
+            dismiss();
+            return;
+        }
 
-        // Conversion logic
-        convertButton.setOnClickListener(v -> {
-            String inputStr = amountEditText.getText().toString();
-            if (inputStr.isEmpty()) {
-                resultTextView.setText("Please enter a valid amount.");
-                return;
-            }
+        // references
+        TextView dialogTitle = view.findViewById(R.id.dialogTitle);
+        exchangeRateDisplay = view.findViewById(R.id.exchangeRateDisplay);
+        inputAmount = view.findViewById(R.id.inputAmount);
+        resultDisplay = view.findViewById(R.id.resultDisplay);
+        inputLabel = view.findViewById(R.id.inputLabel);
+        conversionDirectionGroup = view.findViewById(R.id.conversionDirectionGroup);
 
-            try {
-                double gbpAmount = Double.parseDouble(inputStr);
-                double resultAmount = gbpAmount * item.getRate();
-                DecimalFormat df = new DecimalFormat("#,##0.##");
+        // safely extract data using the user's specific getters
+        String foreignCode = currencyItem.getCurrencyCode() != null ? currencyItem.getCurrencyCode() : "N/A";
+        String foreignName = currencyItem.getCurrencyName() != null ? currencyItem.getCurrencyName() : foreignCode;
 
-                resultTextView.setText(df.format(gbpAmount) + " GBP is equal to " + df.format(resultAmount) + " " + item.getCurrencyCode());
+        //ToDo: dialogTitle.setText("Convert GBP ↔ " + foreignName);
+        dialogTitle.setText("");
 
-            } catch (NumberFormatException e) {
-                resultTextView.setText("Invalid number format.");
+        // set up direction radio buttons text dynamically
+        ((TextView) view.findViewById(R.id.radioGbpToForeign)).setText("GBP → " + foreignCode);
+        ((TextView) view.findViewById(R.id.radioForeignToGbp)).setText(foreignCode + " → GBP");
+
+        // initial UI update
+        resultDisplay.setText("0.00 " + foreignCode);
+        updateUI();
+
+        // setup listeners
+        conversionDirectionGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // determine the new direction
+                if (checkedId == R.id.radioGbpToForeign) {
+                    isGbpToForeign = true;
+                } else if (checkedId == R.id.radioForeignToGbp) {
+                    isGbpToForeign = false;
+                }
+                // update labels and re-run conversion on direction change
+                updateUI();
+                performConversion();
             }
         });
 
-        closeButton.setOnClickListener(v -> dismiss());
+        // TextWatcher for immediate conversion feedback as the user types
+        inputAmount.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
-        builder.setView(view);
-        return builder.create();
-    }
-
-
-    @Override
-    public void onDismiss(@NonNull DialogInterface dialog) {
-        super.onDismiss(dialog);
-
-        // Ensure ListView regains focus after the dialog closes
-        if (getParentFragment() != null) {
-            View parentView = getParentFragment().getView();
-            if (parentView != null) {
-                ListView listView = parentView.findViewById(R.id.currencyListView);
-                if (listView != null) {
-                    listView.post(listView::requestFocus);
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // perform conversion as the user types if there is input
+                if (s.length() > 0) {
+                    performConversion();
+                } else {
+                    String destinationCode = isGbpToForeign ? foreignCode : "GBP";
+                    resultDisplay.setText("0.00 " + destinationCode);
                 }
             }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+    }
+
+    /**
+     * Updates the input label and the exchange rate display based on the selected direction.
+     */
+    private void updateUI() {
+        String foreignCode = currencyItem.getCurrencyCode() != null ? currencyItem.getCurrencyCode() : "N/A";
+        double baseRate = currencyItem.getRate(); // 1 GBP = X Foreign (using user's getRate())
+
+        if (isGbpToForeign) {
+            // direction: GBP -> Foreign
+            inputLabel.setText("Enter amount in GBP:");
+            exchangeRateDisplay.setText("1.00 GBP = " + df.format(baseRate) + " " + foreignCode);
+        } else {
+            // direction: Foreign -> GBP
+            double inverseRate = (baseRate > 0) ? 1.0 / baseRate : 0.0;
+            inputLabel.setText("Enter amount in " + foreignCode + ":");
+            exchangeRateDisplay.setText("1.00 " + foreignCode + " = " + df.format(inverseRate) + " GBP");
+        }
+    }
+
+    /**
+     * Calculates and displays the converted amount based on the selected direction.
+     */
+    private void performConversion() {
+        String inputStr = inputAmount.getText().toString();
+        String foreignCode = currencyItem.getCurrencyCode() != null ? currencyItem.getCurrencyCode() : "N/A";
+        double baseRate = currencyItem.getRate(); // 1 GBP = X Foreign (using user's getRate())
+        String destinationCode;
+        double effectiveRate;
+
+        if (inputStr.isEmpty() || currencyItem == null || baseRate <= 0) {
+            destinationCode = isGbpToForeign ? foreignCode : "GBP";
+            resultDisplay.setText("0.00 " + destinationCode);
+            return;
+        }
+
+        if (isGbpToForeign) {
+            // GBP -> Foreign: Use base rate
+            effectiveRate = baseRate;
+            destinationCode = foreignCode;
+        } else {
+            // Foreign -> GBP: Use inverse rate (1 / base rate)
+            effectiveRate = baseRate > 0 ? 1.0 / baseRate : 0.0;
+            destinationCode = "GBP";
+        }
+
+        try {
+            double sourceAmount = Double.parseDouble(inputStr);
+            double convertedAmount = sourceAmount * effectiveRate;
+            String resultText = df.format(convertedAmount) + " " + destinationCode;
+            resultDisplay.setText(resultText);
+
+        } catch (NumberFormatException e) {
+            Toast.makeText(getContext(), "Invalid number format.", Toast.LENGTH_SHORT).show();
         }
     }
 }
