@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -100,12 +101,9 @@ public class ConversionDialogFragment extends DialogFragment {
         inputLabel = view.findViewById(R.id.inputLabel);
         conversionDirectionGroup = view.findViewById(R.id.conversionDirectionGroup);
 
-        // safely extract data using the user's specific getters
+        // safely extract data using specific getters
         String foreignCode = currencyItem.getCurrencyCode() != null ? currencyItem.getCurrencyCode() : "N/A";
-        String foreignName = currencyItem.getCurrencyName() != null ? currencyItem.getCurrencyName() : foreignCode;
-
-        //ToDo: dialogTitle.setText("Convert GBP ↔ " + foreignName);
-        dialogTitle.setText("");
+        dialogTitle.setText("Convert GBP ↔ " + foreignCode);
 
         // set up direction radio buttons text dynamically
         ((TextView) view.findViewById(R.id.radioGbpToForeign)).setText("GBP → " + foreignCode);
@@ -150,6 +148,10 @@ public class ConversionDialogFragment extends DialogFragment {
             @Override
             public void afterTextChanged(Editable s) { }
         });
+
+        // set close button click listener
+        ImageButton closeButton = view.findViewById(R.id.closeButton);
+        closeButton.setOnClickListener(v -> dismiss());
     }
 
     /**
