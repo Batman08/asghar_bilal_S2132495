@@ -6,10 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -17,6 +19,7 @@ import java.util.List;
  * Implements the colour coding requirement.
  */
 public class CurrencyAdapter extends ArrayAdapter<CurrencyItem> {
+    private final DecimalFormat df = new DecimalFormat("#,##0.00");
 
     public CurrencyAdapter(@NonNull Context context, @NonNull List<CurrencyItem> objects) {
         super(context, 0, objects);
@@ -37,15 +40,15 @@ public class CurrencyAdapter extends ArrayAdapter<CurrencyItem> {
             // get UI components
             TextView nameTextView = convertView.findViewById(R.id.currencyNameTextView);
             TextView rateTextView = convertView.findViewById(R.id.exchangeRateTextView);
+            ImageView flagImageView = convertView.findViewById(R.id.flagImageView);
 
             // set data
+            double rate = item.getRate();
             nameTextView.setText(String.format("%s (%s)", item.getCurrencyName(), item.getCurrencyCode()));
-            rateTextView.setText(String.format("1 GBP = %.4f %s", item.getRate(), item.getCurrencyCode()));
+            rateTextView.setText("1 GBP = " + df.format(rate) + " " + item.getCurrencyCode());
 
             // implement colour coding
-            double rate = item.getRate();
             int color;
-
             if (rate >= 2.0) {
                 // very strong relative to GBP
                 color = Color.rgb(0, 100, 0); // Dark Green
@@ -63,6 +66,10 @@ public class CurrencyAdapter extends ArrayAdapter<CurrencyItem> {
                 color = Color.rgb(255, 0, 0); // Red
             }
             rateTextView.setTextColor(color);
+
+            // Set flag icon
+            item.findFlagResource(getContext());
+            flagImageView.setImageResource(item.getFlagResourceId());
         }
 
         return convertView;
