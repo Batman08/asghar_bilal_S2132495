@@ -2,12 +2,12 @@ package com.gcu.cw_currency.s2132495;
 
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,12 +27,11 @@ public class MainCurrenciesFragment extends Fragment {
     private static final List<String> MAIN_CODES = Arrays.asList("USD", "EUR", "JPY");
 
     public MainCurrenciesFragment() {
-        // Required empty public constructor
+
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_currency_list, container, false);
 
         mainCurrenciesListView = view.findViewById(R.id.currencyListView);
@@ -40,27 +39,22 @@ public class MainCurrenciesFragment extends Fragment {
         mainCurrenciesListView.setEmptyView(emptyTextView);
 
         // Set up the Adapter, but with an empty list initially
-        adapter = new CurrencyAdapter(getContext(), new ArrayList<CurrencyItem>());
+        //ToDo: getContext()
+        adapter = new CurrencyAdapter(requireContext(), new ArrayList<>());
         mainCurrenciesListView.setAdapter(adapter);
 
         // Handle item clicks to open the conversion dialog
-        mainCurrenciesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("CLICK_TEST", "Item clicked at position " + position);
+        mainCurrenciesListView.setOnItemClickListener((parent, view1, position, id) -> {
+            Log.d("CLICK_TEST", "Item clicked at position " + position);
 
-                CurrencyItem selectedItem = adapter.getItem(position);
-                if (selectedItem != null) {
-                    showConversionDialog(selectedItem);
-                }
+            CurrencyItem selectedItem = adapter.getItem(position);
+            if (selectedItem != null) {
+                showConversionDialog(selectedItem);
             }
         });
 
-        // If data is already available in MainActivity, update immediately
-        if (getActivity() instanceof MainActivity) {
-            MainActivity activity = (MainActivity) getActivity();
-            updateList(activity.getAllCurrencyData());
-        }
+        CurrencyViewModel viewModel = new ViewModelProvider(requireActivity()).get(CurrencyViewModel.class);
+        viewModel.getCurrencyData().observe(getViewLifecycleOwner(), this::updateList);
 
         return view;
     }
@@ -70,20 +64,31 @@ public class MainCurrenciesFragment extends Fragment {
      * @param fullList The complete list of CurrencyItem objects.
      */
     public void updateList(List<CurrencyItem> fullList) {
-        if (fullList == null) return;
+        if (fullList == null || adapter == null || mainCurrenciesListView == null) return;
 
+        // save current scroll position
+        int index = mainCurrenciesListView.getFirstVisiblePosition();
+        View v = mainCurrenciesListView.getChildAt(0);
+        int top = (v == null) ? 0 : (v.getTop() - mainCurrenciesListView.getPaddingTop());
+
+        // filter main currencies
         List<CurrencyItem> mainList = new ArrayList<>();
         for (CurrencyItem item : fullList) {
             if (MAIN_CODES.contains(item.getCurrencyCode())) {
                 mainList.add(item);
             }
         }
-        if (adapter != null) {
-            adapter.clear();
-            adapter.addAll(mainList);
-            adapter.notifyDataSetChanged();
-            emptyTextView.setText("No main currency data available.");
-        }
+
+        // update adapter
+        adapter.clear();
+        adapter.addAll(mainList);
+        adapter.notifyDataSetChanged();
+
+        // restore scroll position
+        mainCurrenciesListView.setSelectionFromTop(index, top);
+
+        // update empty text
+        emptyTextView.setText("No main currency data available.");
     }
 
     /**
