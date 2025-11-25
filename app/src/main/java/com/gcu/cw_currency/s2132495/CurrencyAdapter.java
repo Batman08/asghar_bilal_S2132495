@@ -25,41 +25,41 @@ public class CurrencyAdapter extends ArrayAdapter<CurrencyItem> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        // 1. Inflate the layout
+        // inflate the layout
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_currency, parent, false);
         }
 
-        // 2. Get the current item
+        // get the current item
         CurrencyItem item = getItem(position);
 
         if (item != null) {
-            // 3. Get UI components
+            // get UI components
             TextView nameTextView = convertView.findViewById(R.id.currencyNameTextView);
             TextView rateTextView = convertView.findViewById(R.id.exchangeRateTextView);
 
-            // 4. Set data
+            // set data
             nameTextView.setText(String.format("%s (%s)", item.getCurrencyName(), item.getCurrencyCode()));
             rateTextView.setText(String.format("1 GBP = %.4f %s", item.getRate(), item.getCurrencyCode()));
 
-            // 5. Implement Colour Coding (Full marks: at least 4 ranges)
+            // implement colour coding
             double rate = item.getRate();
             int color;
 
             if (rate >= 2.0) {
-                // Very strong relative to GBP (Rare, but possible)
+                // very strong relative to GBP
                 color = Color.rgb(0, 100, 0); // Dark Green
             } else if (rate >= 1.25) {
-                // Strong/Favourable (e.g., USD might be in this range)
+                // strong/favourable
                 color = Color.rgb(0, 175, 0); // Bright Green
             } else if (rate >= 1.0) {
-                // Neutral/Slightly Strong
-                color = Color.rgb(0, 150, 150); // Teal
+                // neutral/slightly strong
+                color = Color.rgb(200, 200, 0); // Yellow-Green
             } else if (rate >= 0.75) {
-                // Weak/Unfavourable
+                // weak/unfavourable
                 color = Color.rgb(255, 140, 0); // Dark Orange
             } else {
-                // Very Weak/Very Unfavourable
+                // very weak/very unfavourable
                 color = Color.rgb(255, 0, 0); // Red
             }
             rateTextView.setTextColor(color);
