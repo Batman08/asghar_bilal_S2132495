@@ -231,8 +231,11 @@ public class MainActivity extends AppCompatActivity {
                     } else if (eventType == XmlPullParser.END_TAG) // Found an end tag
                     {
                         if (xpp.getName().equalsIgnoreCase("item")) {
-                            if (currentItem != null) currentItem.parseDetails();
-                            items.add(currentItem); //add to collection
+                            if (currentItem != null) {
+                                currentItem.parseDetails();
+                                currentItem.findFlagResource(getApplicationContext());
+                                items.add(currentItem); //add to collection
+                            }
                             insideItem = false;
                             Log.d("MyTag", "Item parsing completed!");
                         }
