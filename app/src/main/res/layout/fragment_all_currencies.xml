@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <!-- Search/Filter Bar (4 Marks) -->
+    <!-- Search/Filter Bar -->
     <EditText
         android:id="@+id/searchEditText"
         android:layout_width="match_parent"

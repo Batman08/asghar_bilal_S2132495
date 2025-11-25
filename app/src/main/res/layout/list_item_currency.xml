@@ -7,30 +7,42 @@
     android:paddingHorizontal="16dp"
     android:paddingVertical="8dp">
 
-    <!--
-        ID: currencyNameTextView
-        Used by CurrencyAdapter to display the full name and 3-letter code.
-    -->
-    <TextView
-        android:id="@+id/currencyNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="United States Dollar (USD)"
-        android:textColor="@android:color/black"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+    <!-- Flag Icon -->
+    <ImageView
+        android:id="@+id/flagImageView"
+        android:layout_width="40dp"
+        android:layout_height="28dp"
+        android:layout_marginEnd="12dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:src="@android:drawable/ic_menu_help" />
 
-    <!--
-        ID: exchangeRateTextView
-        Used by CurrencyAdapter to display the rate and apply the colour coding (4 Marks).
-    -->
-    <TextView
-        android:id="@+id/exchangeRateTextView"
+    <!-- Text Layout -->
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingTop="2dp"
-        android:text="1 GBP = 1.2505 USD"
-        android:textColor="#00AA00"
-        android:textSize="14sp" />
+        android:layout_height="wrap_content">
+
+        <!-- Currency Name + Code -->
+        <TextView
+            android:id="@+id/currencyNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="United States Dollar (USD)"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Exchange Rate -->
+        <TextView
+            android:id="@+id/exchangeRateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="2dp"
+            android:text="1 GBP = 1.2505 USD"
+            android:textColor="#00AA00"
+            android:textSize="14sp" />
+
+    </LinearLayout>
 
 </LinearLayout>
