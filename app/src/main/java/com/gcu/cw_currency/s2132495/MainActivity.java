@@ -18,11 +18,21 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -36,10 +46,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements OnClickListener {
-    private TextView rawDataDisplay;
-    private Button startButton;
+//    private TextView rawDataDisplay;
+//    private Button startButton;
     private String result;
     private String url1 = "";
     private String urlSource = "https://www.fx-exchange.com/gbp/rss.xml";
@@ -50,7 +62,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     // References to fragments for runtime updates
     private final MainCurrenciesFragment mainCurrenciesFragment = new MainCurrenciesFragment();
     private final AllCurrenciesFragment allCurrenciesFragment = new AllCurrenciesFragment();
+
+    /* Threaing Components */
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+
+    /* UI Components */
+    private ViewPager2 viewPager;
+    private TabLayout tabLayout;
+    private ProgressBar loadingIndicator; // New loading element
 
 
     @Override
@@ -58,12 +78,43 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Set up the raw links to the graphical components
-        rawDataDisplay = (TextView) findViewById(R.id.rawDataDisplay);
-        startButton = (Button) findViewById(R.id.startButton);
-        startButton.setOnClickListener(this);
+//todo:        rawDataDisplay = (TextView) findViewById(R.id.rawDataDisplay);
+//        startButton = (Button) findViewById(R.id.startButton);
+//        startButton.setOnClickListener(this);
 
         // More Code goes here
 
+        // Setup Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Setup ViewPager and TabLayout (UI Structure - 12 Marks)
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
+        loadingIndicator = findViewById(R.id.loadingIndicator);
+
+        // Create and set the FragmentStateAdapter
+        CurrencyPagerAdapter adapter = new CurrencyPagerAdapter(this);
+        viewPager.setAdapter(adapter);
+
+        // Link the TabLayout and ViewPager2
+        new TabLayoutMediator(tabLayout, viewPager,
+                new TabLayoutMediator.TabConfigurationStrategy() {
+                    @Override
+                    public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                        if (position == 0) {
+                            tab.setText("Main Currencies (USD, EUR, JPY)");
+                        } else {
+                            tab.setText("All Currencies & Search");
+                        }
+                    }
+                }).attach();
+
+        startProgress();
+    }
+
+    public List<CurrencyItem> getAllCurrencyData() {
+        return allCurrencyData;
     }
 
     public void onClick(View aview) {
@@ -122,55 +173,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 XmlPullParser xpp = factory.newPullParser();
                 xpp.setInput(new StringReader(result));
 
-//                YOUR PARSING HERE !!!
-
+                // YOUR PARSING HERE !!!
                 List<CurrencyItem> items = new ArrayList<>();
                 CurrencyItem currentItem = null;
                 boolean insideItem = false;
                 String text = null; // Holds the text content of the last tag
 
                 int eventType = xpp.getEventType();
-
-//                while (eventType != XmlPullParser.END_DOCUMENT) {
-//                    String tagName = xpp.getName();
-//
-//                    switch (eventType) {
-//                        case XmlPullParser.START_TAG:
-//                            if (tagName != null && tagName.equalsIgnoreCase("item")) {
-//                                insideItem = true;
-//                                currentItem = new CurrencyItem();
-//                            }
-//                            break;
-//
-//                        case XmlPullParser.TEXT:
-//                            // Capture the text content (e.g., the value inside <title> or <description>)
-//                            text = xpp.getText();
-//                            break;
-//
-//                        case XmlPullParser.END_TAG:
-//                            if (insideItem && currentItem != null && text != null) {
-//                                if (tagName != null) {
-//                                    if (tagName.equalsIgnoreCase("item")) {
-//                                        // Item parsing complete. Finalize details (extract rate, code, name) and add to list.
-//                                        currentItem.parseDetails();
-//                                        items.add(currentItem);
-//                                        insideItem = false;
-//                                    } else if (tagName.equalsIgnoreCase("title")) {
-//                                        currentItem.setTitle(text.trim());
-//                                    } else if (tagName.equalsIgnoreCase("description")) {
-//                                        currentItem.setDescription(text.trim());
-//                                    } else if (tagName.equalsIgnoreCase("pubDate")) {
-//                                        currentItem.setPubDate(text.trim());
-//                                    } else if (tagName.equalsIgnoreCase("link")) {
-//                                        currentItem.setLink(text.trim());
-//                                    }
-//                                }
-//                            }
-//                            text = null; // Clear text after use to avoid pollution
-//                            break;
-//                    }
-//                    eventType = xpp.next();
-//                }
 
                 while (eventType != XmlPullParser.END_DOCUMENT) {
                     if (eventType == XmlPullParser.START_TAG) // Found a start tag
@@ -241,25 +250,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     eventType = xpp.next(); // Get the next event  before looping again
                 } // End of while
 
-                System.out.println(items);
-
                 parsedItems = items;
-//                if (items != null && !items.isEmpty()) {
-//                    allCurrencyData = items;
-//                    Toast.makeText(MainActivity.this, "Currency data updated successfully!", Toast.LENGTH_SHORT).show();
-//
-//                    // Update both fragments via their public methods
-//                    if (mainCurrenciesFragment.isAdded()) {
-//                        mainCurrenciesFragment.updateList(allCurrencyData);
-//                    }
-//                    if (allCurrenciesFragment.isAdded()) {
-//                        allCurrenciesFragment.updateList(allCurrencyData);
-//                    }
-//                } else {
-//                    Toast.makeText(MainActivity.this, "Fetched data was empty or invalid.", Toast.LENGTH_LONG).show();
-//                }
-
-
             } catch (XmlPullParserException e) {
                 Log.e("Parsing", "EXCEPTION" + e);
                 //throw new RuntimeException(e);
@@ -275,6 +266,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         allCurrencyData = parsedItems;
                         Toast.makeText(MainActivity.this, "Currency data updated successfully!", Toast.LENGTH_SHORT).show();
 
+                        // Hide the loading indicator
+                        loadingIndicator.setVisibility(View.GONE);
+
+                        // 2. Show the modern Fragment-based UI
+                        tabLayout.setVisibility(View.VISIBLE);
+                        viewPager.setVisibility(View.VISIBLE);
+
+
                         // Update both fragments via their public methods
                         if (mainCurrenciesFragment.isAdded()) {
                             mainCurrenciesFragment.updateList(allCurrencyData);
@@ -284,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         }
                     } else {
                         Toast.makeText(MainActivity.this, "Fetched data was empty or invalid.", Toast.LENGTH_LONG).show();
+                        loadingIndicator.setVisibility(View.GONE); // Hide loading indicator on failure
                     }                }
             });
 
@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             MainActivity.this.runOnUiThread(new Runnable() {
                 public void run() {
                     Log.d("UI thread", "I am the UI thread");
-                    rawDataDisplay.setText(result);
+//ToDo:                    rawDataDisplay.setText(result);
                 }
             });
         }
@@ -306,5 +306,38 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         private void parseData(String dataToParse) {
 
         }
+    }
+
+    /**
+     * FragmentStateAdapter to manage the two main currency views (Main and All) in the ViewPager2.
+     */
+    private class CurrencyPagerAdapter extends FragmentStateAdapter {
+
+        public CurrencyPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            // Return the pre-instantiated fragments for the ViewPager
+            if (position == 0) {
+                return mainCurrenciesFragment;
+            } else {
+                return allCurrenciesFragment;
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return 2; // Two tabs: Main Currencies and All Currencies
+        }
+    }
+
+    // Always shut down the executor service when the activity is destroyed to prevent leaks
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdownNow();
     }
 }
