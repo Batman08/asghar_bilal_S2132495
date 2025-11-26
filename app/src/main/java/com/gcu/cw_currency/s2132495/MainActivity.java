@@ -12,6 +12,9 @@
 
 package com.gcu.cw_currency.s2132495;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -53,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
     private List<CurrencyItem> parsedItems = new ArrayList<>();
 
     private final Handler autoUpdateHandler = new Handler(Looper.getMainLooper());
-    private final long UPDATE_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
-    // For demo purposes, reduce it to 1 minute: 60 * 1000
+    private final long UPDATE_INTERVAL = 60* 60 * 1000; // 1 hour in milliseconds
+    //private final long UPDATE_INTERVAL = 10 * 1000; // For demo purposes, reduce it to 1 minute: 60 * 1000
 
     /* Fragments for runtime updates */
     private final MainCurrenciesFragment mainCurrenciesFragment = new MainCurrenciesFragment();
@@ -103,8 +106,13 @@ public class MainActivity extends AppCompatActivity {
         //ToDo: startProgress();
         // Only fetch data if the Activity is starting for the first time
         if (savedInstanceState == null) {
-            // Immediate fetch
-            executorService.execute(new Task(urlSource));
+            // Only fetch if network is available
+            if (isNetworkConnected()) {
+                executorService.execute(new Task(urlSource));
+            } else {
+                // If no network, immediately handle failure on the main thread
+                mainThreadHandler.post(() -> handleNetworkFailure(false));
+            }
 
             // Start the recurring auto-update
             autoUpdateHandler.postDelayed(autoUpdateRunnable, UPDATE_INTERVAL);
@@ -128,10 +136,39 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Checks if there is an active network connection.
+     */
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        }
+        return false;
+    }
+
+    /**
+     * Handles UI updates and Toast messages on network failure
+     */
+    private void handleNetworkFailure(boolean dataExisted) {
+        loadingIndicator.setVisibility(View.GONE);
+        if (dataExisted) {
+            Toast.makeText(MainActivity.this, "Network connection lost. Displaying last loaded data.", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(MainActivity.this, "No internet connection. Cannot fetch currency data.", Toast.LENGTH_LONG).show();
+        }
+
+        // Ensure UI elements are visible even on failure if data might be stale
+        tabLayout.setVisibility(View.VISIBLE);
+        viewPager.setVisibility(View.VISIBLE);
+    }
+
     // Need separate thread to access the internet resource over network
     // Other neater solutions should be adopted in later iterations.
     private class Task implements Runnable {
         private final String url;
+        private boolean fetchSuccess = false;
 
         public Task(String aurl) {
             url = aurl;
@@ -144,10 +181,24 @@ public class MainActivity extends AppCompatActivity {
             BufferedReader in = null;
             String inputLine = "";
             result = "";
+            fetchSuccess = false; // Reset status
 
             Log.d("MyTask", "in run");
 
+            if (!isNetworkConnected()) {
+                List<CurrencyItem> data = viewModel.getCurrencyData().getValue();
+                mainThreadHandler.post(() -> handleNetworkFailure(data != null && !data.isEmpty()));
+                Log.e("MyTask", "Network connection lost during fetch attempt.");
+                return; // Exit if network is gone
+            }
+
             try {
+                // If we reach here, the external check was probably true, but we try again.
+                if (!isNetworkConnected()) {
+                    Log.e("MyTask", "Network connection lost during fetch attempt.");
+                    return; // Exit if network is gone
+                }
+
                 Log.d("MyTask", "in try");
                 aurl = new URL(url);
                 yc = aurl.openConnection();
@@ -156,8 +207,17 @@ public class MainActivity extends AppCompatActivity {
                     result = String.format("%s%s", result, inputLine);
                 }
                 in.close();
+
+                fetchSuccess = true;
             } catch (IOException ae) {
                 Log.e("MyTask", "ioexception");
+                fetchSuccess = false;
+            }
+
+            if (!fetchSuccess) {
+                // Post failure notification to main thread and stop here
+                mainThreadHandler.post(() -> handleNetworkFailure(!viewModel.getCurrencyData().getValue().isEmpty()));
+                return;
             }
 
             //Clean up any leading garbage characters
