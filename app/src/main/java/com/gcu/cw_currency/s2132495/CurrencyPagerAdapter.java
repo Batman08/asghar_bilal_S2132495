@@ -21,7 +21,7 @@ public class CurrencyPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        // Return the pre-instantiated fragments for the ViewPager
+        // return the pre-instantiated fragments for the ViewPager
         if (position == 0) {
             return mainCurrenciesFragment;
         } else {
@@ -31,6 +31,6 @@ public class CurrencyPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2; // Two tabs: Main Currencies and All Currencies
+        return 2; // two tabs: Main Currencies and All Currencies
     }
 }

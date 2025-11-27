@@ -58,7 +58,7 @@ public class ConversionDialogFragment extends DialogFragment {
             currencyItem = (CurrencyItem) getArguments().getSerializable(ARG_CURRENCY_ITEM);
         }
 
-        // Use a standard style for wide dialog (adjust theme name if needed)
+        // use a standard style for wide dialog (adjust theme name if needed)
         setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar);
     }
 

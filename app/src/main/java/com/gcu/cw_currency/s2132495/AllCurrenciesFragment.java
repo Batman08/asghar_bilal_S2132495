@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A simple {@link Fragment} subclass for displaying all currencies, including search.
+ * A simple {@link Fragment} class for displaying all currencies, including search.
  */
 public class AllCurrenciesFragment extends Fragment {
     private ListView allCurrenciesListView;
