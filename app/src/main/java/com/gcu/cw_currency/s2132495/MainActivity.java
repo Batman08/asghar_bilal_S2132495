@@ -28,8 +28,6 @@ import com.google.android.material.tabs.TabLayoutMediator;
 public class MainActivity extends AppCompatActivity {
     CurrencyViewModel viewModel;
     private final String urlSource = "https://www.fx-exchange.com/gbp/rss.xml";
-    private final long UPDATE_INTERVAL = 60* 60 * 1000; // 1 hour in milliseconds
-    //private final long UPDATE_INTERVAL = 10 * 1000; // For demo purposes, reduce it to 1 minute: 60 * 1000
 
     /* Fragments for runtime updates */
     private final MainCurrenciesFragment mainCurrenciesFragment = new MainCurrenciesFragment();
