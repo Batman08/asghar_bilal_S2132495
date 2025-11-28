@@ -24,8 +24,8 @@ public class CurrencyViewModel extends AndroidViewModel {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private ConnectivityManager.NetworkCallback networkCallback;
     private final Handler refreshHandler = new Handler(Looper.getMainLooper());
-    private final long UPDATE_INTERVAL = 60 * 60 * 1000; // 1 hour
-    //private final long UPDATE_INTERVAL = 10 * 1000; // 10 seconds
+    private final long UPDATE_INTERVAL = 60 * 60 * 1000; // default: 1 hour
+    //private final long UPDATE_INTERVAL = 10 * 1000; // demo: 10 seconds
     private String lastUrlLoaded = null;
 
     public CurrencyViewModel(@NonNull Application application) {
